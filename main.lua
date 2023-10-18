@@ -20,7 +20,6 @@ function love.load()
     for itemIndex, item in pairs(table) do
     	count = count + 1
     end
-
     return count
   end
 
@@ -45,25 +44,37 @@ function love.load()
   end
 
   function MoveToLeft(player, enemies)
-    local currentX = player:getX()
-  	local leftX = 0
-    for itemIndex, item in pairs(enemies) do
-      if item:getX() < currentX then
-      	leftX = item:getX()
+    if player:getHealth() > 0 then
+    	local currentX = player:getX()
+      for itemIndex, item in pairs(enemies) do
+        if item:getX() < currentX then
+        	local leftX = item:getX()
+          player.x = leftX
+        end
       end
     end
-    player.x = leftX
   end
 
   function MoveToRight(player, enemies)
-    local currentX = player:getX()
-  	local rightX = 0
-    for itemIndex, item in pairs(enemies) do
-      if item:getX() > currentX then
-      	rightX = item:getX()
+    if player:getHealth() > 0 then
+    	for itemIndex, item in pairs(enemies) do
+        if item:getX() > player:getX() then
+        	local rightX = item:getX()
+          player.x = rightX
+          break
+        end
       end
     end
-    player.x = rightX
+  end
+
+  function Attack(player, enemies)
+    if player:getHealth() > 0 then
+    	for itemIndex, item in pairs(enemies) do
+      	if item:getX() == player:getX() then
+        	item.health = item.health - player:getDamage()
+        end
+      end
+    end
   end
 end
 
@@ -75,15 +86,9 @@ function love.keypressed(key)
   if key == 'right' then
   	MoveToRight(Player, Enemies)
   end
-end
 
-function love.mousepressed(x, y, button)
-  if button == 1 then
-  	for enemyIndex, enemy  in pairs(Enemies) do
-    	if enemy:getIsTarget() == true then
-      	enemy.health = enemy.health - 10
-      end
-    end
+  if key =='space' then
+  	Attack(Player, Enemies)
   end
 end
 
