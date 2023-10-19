@@ -33,16 +33,6 @@ function love.load()
     end
   end
 
-  function SetRandomTarget(table)
-    local randomIndex = love.math.random(1, GetItemsCount(Enemies))
-    for itemIndex, item in pairs(table) do
-    	if item:getIsTarget() == true then
-      	item.target = false
-      end
-      table[randomIndex].target = true
-    end
-  end
-
   function MoveToLeft(player, enemies)
     if player:getHealth() > 0 then
     	local currentX = player:getX()
@@ -138,8 +128,6 @@ function love.draw()
 end
 
 function love.update(dt)
-  SetRandomTarget(Enemies)
-
   -- Remove enemy if enemy hp below 0
   for enemyIndex, enemy in pairs(Enemies) do
   	if enemy:getHealth() <= 0 then
