@@ -1,12 +1,13 @@
 Enemy = {}
 
-function Enemy:new(x, y, health, damage, target)
+function Enemy:new(x, y, health, damage, attackSpeed, target)
 
   local obj = {}
     obj.x = x
     obj.y = y
     obj.health = health
     obj.damage = damage
+    obj.attackSpeed = attackSpeed
     obj.target = target
 
   function obj:getX()
@@ -23,6 +24,10 @@ function Enemy:new(x, y, health, damage, target)
 
   function obj:getDamage()
   	return self.damage
+  end
+
+  function obj:getAttackSpeed()
+    return self.attackSpeed
   end
 
   function obj:getIsTarget()
