@@ -14,7 +14,9 @@ function love.load()
   }
 
   AttackTime = 0
-  
+
+  Debug = false
+
   function GetItemsCount(table)
     local count = 0
     for itemIndex, item in pairs(table) do
@@ -71,8 +73,16 @@ function love.keypressed(key)
   	MoveToRight(Player, Enemies)
   end
 
-  if key =='space' then
+  if key == 'space' then
   	Attack(Player, Enemies)
+  end
+
+  if key == 'f1' then
+    if Debug then
+    	Debug = false
+    else
+      Debug = true
+    end
   end
 end
 
@@ -113,12 +123,14 @@ function love.draw()
     love.graphics.print('GAME OVER', ArenaHeight / 2, ArenaWidth / 2)
   end
 
-    -- Debug info
+  -- Debug info
+  if Debug == true then
     love.graphics.setColor(1, 1, 1)
     love.graphics.print(table.concat({
     'FPS: '..love.timer.getFPS(),
     'Attack Timer: '..AttackTime
   },'\n'))
+  end
 end
 
 function love.update(dt)
