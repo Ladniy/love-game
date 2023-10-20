@@ -8,13 +8,13 @@ function love.load()
   Player = Character:new(ArenaWidth / 2, ArenaHeight / 2 + 200, 100, 10)
 
   Enemies = {
-    Enemy:new(ArenaWidth / 2 - 150, ArenaHeight * 0.20, 100, 2, false),
-    Enemy:new(ArenaWidth / 2, ArenaHeight * 0.25, 100, 3, true),
-    Enemy:new(ArenaWidth / 2 + 150, ArenaHeight * 0.20, 100, 1, false)
+    Enemy:new(ArenaWidth / 2 - 150, ArenaHeight * 0.20, 100, 1, 1, false),
+    Enemy:new(ArenaWidth / 2, ArenaHeight * 0.25, 100, 1, 1, true),
+    Enemy:new(ArenaWidth / 2 + 150, ArenaHeight * 0.20, 100, 1, 1, false)
   }
 
-  CurrentDelta = 0
-
+  AttackTime = 0
+  
   function GetItemsCount(table)
     local count = 0
     for itemIndex, item in pairs(table) do
@@ -23,23 +23,17 @@ function love.load()
     return count
   end
 
-  function EnemiesAttack(object)
-    local sumOfDamage = 0
-  	if GetItemsCount(Enemies) ~= 0 then
-      for enemyIndex, enemy in pairs(Enemies) do
-      	sumOfDamage = sumOfDamage + enemy:getDamage()
-      end
-    	object.health = object.health - sumOfDamage
-    end
+  function EnemiesAttack(player, damage)
+    player.health = player.health - damage
   end
 
   function MoveToLeft(player, enemies)
     if player:getHealth() > 0 then
     	local currentX = player:getX()
-      for itemIndex, item in pairs(enemies) do
-        if item:getX() < currentX then
-        	local leftX = item:getX()
-          player.x = leftX
+      for enemyIndex, enemy in pairs(enemies) do
+        if enemy:getX() < currentX then
+        	local smallerX = enemy:getX()
+          player.x = smallerX
         end
       end
     end
@@ -47,10 +41,10 @@ function love.load()
 
   function MoveToRight(player, enemies)
     if player:getHealth() > 0 then
-    	for itemIndex, item in pairs(enemies) do
-        if item:getX() > player:getX() then
-        	local rightX = item:getX()
-          player.x = rightX
+    	for enemyIndex, enemy in pairs(enemies) do
+        if enemy:getX() > player:getX() then
+        	local largerX = enemy:getX()
+          player.x = largerX
           break
         end
       end
@@ -59,9 +53,9 @@ function love.load()
 
   function Attack(player, enemies)
     if player:getHealth() > 0 then
-    	for itemIndex, item in pairs(enemies) do
-      	if item:getX() == player:getX() then
-        	item.health = item.health - player:getDamage()
+    	for enemyIndex, enemy in pairs(enemies) do
+      	if enemy:getX() == player:getX() then
+        	enemy.health = enemy.health - player:getDamage()
         end
       end
     end
@@ -122,8 +116,8 @@ function love.draw()
     -- Debug info
     love.graphics.setColor(1, 1, 1)
     love.graphics.print(table.concat({
-    'dt: '..CurrentDelta,
-    'fps: '..love.timer.getFPS()
+    'FPS: '..love.timer.getFPS(),
+    'Attack Timer: '..AttackTime
   },'\n'))
 end
 
@@ -135,8 +129,14 @@ function love.update(dt)
     end
   end
 
-  CurrentDelta = math.ceil(CurrentDelta + (dt * 100))
-  if CurrentDelta % 100 == 1 then
-  	EnemiesAttack(Player)
+  -- Attack player with given damage and attack speed
+  for enemyIndex, enemy in ipairs(Enemies) do
+  	if AttackTime and GetItemsCount(Enemies) > 0 then
+    	AttackTime = AttackTime + dt
+      if AttackTime >= enemy:getAttackSpeed() then
+      	EnemiesAttack(Player, enemy:getDamage())
+        AttackTime = 0
+      end
+    end
   end
 end
