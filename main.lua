@@ -8,9 +8,9 @@ function love.load()
   Player = Character:new(ArenaWidth / 2, ArenaHeight / 2 + 200, 100, 10)
 
   Enemies = {
-    Enemy:new(ArenaWidth / 2 - 150, ArenaHeight * 0.20, 100, 1, 1, false),
-    Enemy:new(ArenaWidth / 2, ArenaHeight * 0.25, 100, 1, 1, true),
-    Enemy:new(ArenaWidth / 2 + 150, ArenaHeight * 0.20, 100, 1, 1, false)
+    Enemy:new(ArenaWidth / 2 - 150, ArenaHeight * 0.20, 100, 1, 1),
+    Enemy:new(ArenaWidth / 2, ArenaHeight * 0.25, 100, 1, 1),
+    Enemy:new(ArenaWidth / 2 + 150, ArenaHeight * 0.20, 100, 1, 1)
   }
 
   AttackTime = 0
