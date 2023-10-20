@@ -1,13 +1,13 @@
 Enemy = {}
 
-function Enemy:new(x, y, health, damage, target)
+function Enemy:new(x, y, health, damage, attackSpeed)
 
   local obj = {}
     obj.x = x
     obj.y = y
     obj.health = health
     obj.damage = damage
-    obj.target = target
+    obj.attackSpeed = attackSpeed
 
   function obj:getX()
   	return self.x
@@ -25,8 +25,8 @@ function Enemy:new(x, y, health, damage, target)
   	return self.damage
   end
 
-  function obj:getIsTarget()
-  	return self.target
+  function obj:getAttackSpeed()
+    return self.attackSpeed
   end
 
   setmetatable(obj, self)
