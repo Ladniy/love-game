@@ -8,12 +8,10 @@ function love.load()
   Player = Character:new(ArenaWidth / 2, ArenaHeight / 2 + 200, 100, 10)
 
   Enemies = {
-    Enemy:new(ArenaWidth / 2 - 150, ArenaHeight * 0.20, 100, 1, 1),
-    Enemy:new(ArenaWidth / 2, ArenaHeight * 0.25, 100, 1, 1),
-    Enemy:new(ArenaWidth / 2 + 150, ArenaHeight * 0.20, 100, 1, 1)
+    Enemy:new(ArenaWidth / 2 - 150, ArenaHeight * 0.20, 100, 2, 1, 0),
+    Enemy:new(ArenaWidth / 2, ArenaHeight * 0.25, 100, 1, 1/2, 0),
+    Enemy:new(ArenaWidth / 2 + 150, ArenaHeight * 0.20, 100, 10, 5, 0)
   }
-
-  AttackTime = 0
 
   Debug = false
 
@@ -128,7 +126,6 @@ function love.draw()
     love.graphics.setColor(1, 1, 1)
     love.graphics.print(table.concat({
     'FPS: '..love.timer.getFPS(),
-    'Attack Timer: '..AttackTime
   },'\n'))
   end
 end
@@ -142,13 +139,11 @@ function love.update(dt)
   end
 
   -- Attack player with given damage and attack speed
-  for enemyIndex, enemy in ipairs(Enemies) do
-  	if AttackTime and GetItemsCount(Enemies) > 0 then
-    	AttackTime = AttackTime + dt
-      if AttackTime >= enemy:getAttackSpeed() then
-      	EnemiesAttack(Player, enemy:getDamage())
-        AttackTime = 0
-      end
+  for enemyIndex, enemy in pairs(Enemies) do
+  	enemy.timer = enemy.timer + dt
+    if enemy:getTimer() >= enemy:getAttackSpeed() then
+    	EnemiesAttack(Player, enemy:getDamage())
+      enemy.timer = 0
     end
   end
 end
