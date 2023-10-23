@@ -1,19 +1,40 @@
 require 'objects/character'
 require 'objects/enemy'
+require 'objects/weapon'
 
 function love.load()
   ArenaWidth = 800
   ArenaHeight = 600
 
-  Player = Character:new(ArenaWidth / 2, ArenaHeight / 2 + 200, 100, 10)
+  Debug = false
 
-  Enemies = {
-    Enemy:new(ArenaWidth / 2 - 150, ArenaHeight * 0.20, 100, 2, 1, 0),
-    Enemy:new(ArenaWidth / 2, ArenaHeight * 0.25, 100, 1, 1/2, 0),
-    Enemy:new(ArenaWidth / 2 + 150, ArenaHeight * 0.20, 100, 10, 5, 0)
+  WeaponsTable = {
+    Weapon:new('Sword', 5, 1),
+    Weapon:new('Stick', 1.5, 1/2),
+    Weapon:new('Iron Rod', 3, 1),
+    Weapon:new('Knuckle', 2, 1/2)
   }
 
-  Debug = false
+  function Random(min, max)
+    return love.math.random(min, max)
+  end
+
+  Player = Character:new(ArenaWidth / 2, ArenaHeight / 2 + 200, 100, WeaponsTable[Random(1, 4)])
+
+  Enemies = {
+    Enemy:new(ArenaWidth / 2 - 150, ArenaHeight * 0.20, 100, 0, WeaponsTable[Random(1, 4)]),
+    Enemy:new(ArenaWidth / 2, ArenaHeight * 0.20, 100, 0, WeaponsTable[Random(1, 4)]),
+    Enemy:new(ArenaWidth / 2 + 150, ArenaHeight * 0.20, 100, 0, WeaponsTable[Random(1, 4)])
+  }
+
+  Score = 0
+
+  function DrawCenteredText(rectX, rectY, rectWidth, rectHeight, text)
+	  local font       = love.graphics.getFont()
+	  local textWidth  = font:getWidth(text)
+	  local textHeight = font:getHeight()
+	  love.graphics.print(text, rectX+rectWidth/2, rectY+rectHeight/2, 0, 3, 3, textWidth/2, textHeight/2)
+  end
 
   function GetItemsCount(table)
     local count = 0
@@ -53,9 +74,10 @@ function love.load()
 
   function Attack(player, enemies)
     if player:getHealth() > 0 then
+      local weapon = player:getWeapon()
     	for enemyIndex, enemy in pairs(enemies) do
       	if enemy:getX() == player:getX() then
-        	enemy.health = enemy.health - player:getDamage()
+        	enemy.health = enemy.health - weapon:getDamage()
         end
       end
     end
@@ -81,6 +103,10 @@ function love.keypressed(key)
     else
       Debug = true
     end
+  end
+
+  if key == 'f2' then
+  	Player.health = 0
   end
 end
 
@@ -113,20 +139,33 @@ function love.draw()
     -- Print a health points for each enemy
     love.graphics.setColor(1, 1, 1)
     love.graphics.print('HP: '..enemy:getHealth(), enemy:getX() - 25, enemy:getY() + 40)
+
+    -- Draw damage inside each enemy
+    local weapon = enemy:getWeapon()
+    love.graphics.setColor(0, 0, 0)
+    love.graphics.print('AT: '..weapon:getDamage(), enemy:getX() - 15, enemy:getY() - 5)
   end
 
   -- Print a "GAME OVER" if player died
   if Player:getHealth() < 0 then
-  	love.graphics.setColor(1, 0, 0)
-    love.graphics.print('GAME OVER', ArenaHeight / 2, ArenaWidth / 2)
+  	love.graphics.setColor(0, 0, 0, 1)
+    local x, y = 200, 280
+    local w, h = 400, 40
+    love.graphics.rectangle('line', x, y, w, h)
+    love.graphics.setColor(1, 0, 0)
+    DrawCenteredText(x, y, w, h, 'GAME OVER')
   end
+
+  -- Print score
+  love.graphics.setColor(1, 1, 1)
+  love.graphics.print('Score: '..Score)
 
   -- Debug info
   if Debug == true then
     love.graphics.setColor(1, 1, 1)
     love.graphics.print(table.concat({
     'FPS: '..love.timer.getFPS(),
-  },'\n'))
+  },'\n'), 0, 50)
   end
 end
 
@@ -135,15 +174,32 @@ function love.update(dt)
   for enemyIndex, enemy in pairs(Enemies) do
   	if enemy:getHealth() <= 0 then
     	table.remove(Enemies, enemyIndex)
+      Score = Score + 10
     end
   end
 
   -- Attack player with given damage and attack speed
   for enemyIndex, enemy in pairs(Enemies) do
+    local weapon =      enemy:getWeapon()
+    local attackSpeed = weapon:getAttackSpeed()
+    local damage =      weapon:getDamage()
   	enemy.timer = enemy.timer + dt
-    if enemy:getTimer() >= enemy:getAttackSpeed() then
-    	EnemiesAttack(Player, enemy:getDamage())
+    if enemy:getTimer() >= attackSpeed then
+    	EnemiesAttack(Player, damage)
       enemy.timer = 0
+    end
+  end
+
+  -- Spawn new enemies
+  if GetItemsCount(Enemies) == 0 then
+  	for i = 1, 3, 1 do
+      if i == 1 then
+      	table.insert(Enemies, i, Enemy:new(ArenaWidth / 2 - 150, ArenaHeight * 0.20, 100, 0, WeaponsTable[Random(1, 4)]))
+      elseif i == 2 then
+      	table.insert(Enemies, i, Enemy:new(ArenaWidth / 2, ArenaHeight * 0.20, 100, 0, WeaponsTable[Random(1, 4)]))
+      else
+        table.insert(Enemies, i, Enemy:new(ArenaWidth / 2 + 150, ArenaHeight * 0.20, 100, 0, WeaponsTable[Random(1, 4)] ))
+      end
     end
   end
 end
