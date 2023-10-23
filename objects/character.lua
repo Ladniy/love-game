@@ -1,12 +1,12 @@
 Character = {}
 
-function Character:new(x, y, health, damage)
+function Character:new(x, y, health, weapon)
 
   local obj = {}
     obj.x = x
     obj.y = y
     obj.health = health
-    obj.damage = damage
+    obj.weapon = weapon
 
   function obj:getX()
   	return self.x
@@ -20,8 +20,8 @@ function Character:new(x, y, health, damage)
   	return self.health
   end
 
-  function obj:getDamage()
-  	return self.damage
+  function obj:getWeapon()
+  	return self.weapon
   end
 
   setmetatable(obj, self)
