@@ -1,6 +1,6 @@
 Enemy = {}
 
-function Enemy:new(x, y, health, timer, weapon)
+function Enemy:new(x, y, health, timer, weapon, image)
 
   local obj = {}
     obj.x = x
@@ -8,6 +8,7 @@ function Enemy:new(x, y, health, timer, weapon)
     obj.health = health
     obj.timer = timer
     obj.weapon = weapon
+    obj.image = image
 
   function obj:getX()
   	return self.x
@@ -27,6 +28,10 @@ function Enemy:new(x, y, health, timer, weapon)
 
   function obj:getWeapon()
   	return self.weapon
+  end
+
+  function obj:getImage()
+    return self.image
   end
 
   setmetatable(obj, self)
