@@ -2,6 +2,7 @@ require 'objects/character'
 require 'objects/enemy'
 require 'objects/weapon'
 require 'movement'
+require 'combat'
 
 function love.load()
   ArenaWidth = 800
@@ -26,23 +27,6 @@ function love.load()
   }
 
   Score = 0
-
-
-
-  function EnemiesAttack(player, damage)
-    player.health = player.health - damage
-  end
-
-  function Attack(player, enemies)
-    if player:getHealth() > 0 then
-      local weapon = player:getWeapon()
-    	for enemyIndex, enemy in pairs(enemies) do
-      	if enemy:getX() == player:getX() then
-        	enemy.health = enemy.health - weapon:getDamage()
-        end
-      end
-    end
-  end
 end
 
 function love.keypressed(key)
@@ -139,17 +123,8 @@ function love.update(dt)
     end
   end
 
-  -- Attack player with given damage and attack speed
-  for enemyIndex, enemy in pairs(Enemies) do
-    local weapon =      enemy:getWeapon()
-    local attackSpeed = weapon:getAttackSpeed()
-    local damage =      weapon:getDamage()
-  	enemy.timer = enemy.timer + dt
-    if enemy:getTimer() >= attackSpeed then
-    	EnemiesAttack(Player, damage)
-      enemy.timer = 0
-    end
-  end
+  -- Call function for enemies attack
+  EnemiesAttack(Player, Enemies, dt)
 
   -- Spawn new enemies
   if GetItemsCount(Enemies) == 0 then
