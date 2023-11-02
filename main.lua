@@ -1,6 +1,7 @@
 require 'objects/character'
 require 'objects/enemy'
 require 'objects/weapon'
+require 'movement'
 
 function love.load()
   ArenaWidth = 800
@@ -32,30 +33,6 @@ function love.load()
     player.health = player.health - damage
   end
 
-  function MoveToLeft(player, enemies)
-    if player:getHealth() > 0 then
-    	local currentX = player:getX()
-      for enemyIndex, enemy in pairs(enemies) do
-        if enemy:getX() < currentX then
-        	local smallerX = enemy:getX()
-          player.x = smallerX
-        end
-      end
-    end
-  end
-
-  function MoveToRight(player, enemies)
-    if player:getHealth() > 0 then
-    	for enemyIndex, enemy in pairs(enemies) do
-        if enemy:getX() > player:getX() then
-        	local largerX = enemy:getX()
-          player.x = largerX
-          break
-        end
-      end
-    end
-  end
-
   function Attack(player, enemies)
     if player:getHealth() > 0 then
       local weapon = player:getWeapon()
@@ -69,16 +46,16 @@ function love.load()
 end
 
 function love.keypressed(key)
-  if key == 'left' then
-  	MoveToLeft(Player, Enemies)
+  if key == 'left' and GameState == 'combat' then
+  	MoveToLeftEnemy(Player, Enemies)
   end
 
-  if key == 'right' then
-  	MoveToRight(Player, Enemies)
+  if key == 'right' and GameState == 'combat' then
+  	MoveToRightEnemy(Player, Enemies)
   end
 
-  if key == 'space' then
-  	Attack(Player, Enemies)
+  if key == 'space' and GameState == 'combat' then
+  	PlayerAttack(Player, Enemies)
   end
 
   if key == 'f1' then
