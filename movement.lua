@@ -1,6 +1,6 @@
-function MoveToLeft(player, enemies)
+function MoveToLeftEnemy(player, enemies)
 	if player:getHealth() > 0 then
-	  for enemyIndex, enemy in pairs(enemies) do
+	  for _, enemy in pairs(enemies) do
 	    if enemy:getX() < player:getX() then
 	    	local smallerX = enemy:getX()
 	      player.x = smallerX
@@ -9,9 +9,9 @@ function MoveToLeft(player, enemies)
 	end
 end
 
-function MoveToRight(player, enemies)
+function MoveToRightEnemy(player, enemies)
 	if player:getHealth() > 0 then
-		for enemyIndex, enemy in pairs(enemies) do
+		for _, enemy in pairs(enemies) do
 	    if enemy:getX() > player:getX() then
 	    	local largerX = enemy:getX()
 	      player.x = largerX
