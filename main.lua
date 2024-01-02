@@ -1,45 +1,38 @@
+require 'utils'
 require 'objects/character'
 require 'objects/enemy'
 require 'objects/weapon'
 require 'movement'
 require 'combat'
+require 'graphics'
+
+local lg = love.graphics
 
 function love.load()
+  Debug = false
+
   ArenaWidth = 800
   ArenaHeight = 600
 
-  Debug = false
+  Player = Character:new(ArenaWidth / 2, ArenaHeight / 2 + 150, 100,
+    WeaponsTable[Random(1, 3)], lg.newImage('assets/new-character.png'))
 
-  WeaponsTable = {
-    Weapon:new('Sword', 5, 1),
-    Weapon:new('Stick', 1.5, 1/2),
-    Weapon:new('Iron Rod', 3, 1),
-    Weapon:new('Knuckle', 2, 1/2)
-  }
-
-
-  Player = Character:new(ArenaWidth / 2, ArenaHeight / 2 + 200, 100, WeaponsTable[Random(1, 4)])
-
-  Enemies = {
-    Enemy:new(ArenaWidth / 2 - 150, ArenaHeight * 0.20, 100, 0, WeaponsTable[Random(1, 4)]),
-    Enemy:new(ArenaWidth / 2, ArenaHeight * 0.20, 100, 0, WeaponsTable[Random(1, 4)]),
-    Enemy:new(ArenaWidth / 2 + 150, ArenaHeight * 0.20, 100, 0, WeaponsTable[Random(1, 4)])
-  }
+  GameState = 'combat'
 
   Score = 0
 end
 
 function love.keypressed(key)
   if key == 'left' and GameState == 'combat' then
-  	MoveToLeftEnemy(Player, Enemies)
+  	MoveToLeftEnemy(Player, EnemiesTable)
   end
 
   if key == 'right' and GameState == 'combat' then
-  	MoveToRightEnemy(Player, Enemies)
+  	MoveToRightEnemy(Player, EnemiesTable)
   end
 
   if key == 'space' and GameState == 'combat' then
-  	PlayerAttack(Player, Enemies)
+  	PlayerAttack(Player, EnemiesTable)
   end
 
   if key == 'f1' then
@@ -50,92 +43,79 @@ function love.keypressed(key)
     end
   end
 
+  -- Instant players death for debug
   if key == 'f2' then
   	Player.health = 0
   end
 end
 
+function love.update(dt)
+  SpawnEnemies(EnemiesTable)
+
+  -- Call function for enemies attack
+  EnemiesAttack(Player, EnemiesTable, dt)
+
+  -- Remove enemy if enemy hp below 0
+  RemoveEnemy(EnemiesTable)
+end
+
 function love.draw()
+  -- Draw combat GUI if player in combat
+  if GameState == 'combat' then
+  	lg.draw(CombatGUI)
+  end
+
   -- Player drawning
   if Player:getHealth() > 0 then
     -- Draw a player
-  	love.graphics.setColor(0, 0, 1)
-    love.graphics.circle('fill', Player:getX(), Player:getY(), 30)
-
+    lg.draw(Player:getImage(), Player:getX() - 32, Player:getY() - 32)
     -- Draw a health bar
-    love.graphics.setColor(0, 1, 0)
-    love.graphics.rectangle('fill', Player:getX() - 25, Player:getY() + 40, Player:getHealth() * 0.5, 10)
+    lg.setColor(0, 1, 0)
+    lg.rectangle('fill', Player:getX() - 25, Player:getY() + 40, Player:getHealth() * 0.5, 10)
 
     -- Print a health points
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.print('HP: '..Player:getHealth(), Player:getX() - 25, Player:getY() + 40)
+    lg.setColor(1, 1, 1)
+    lg.print('HP: '..Player:getHealth(), Player:getX() - 25, Player:getY() + 40)
   end
 
   -- Enemy drawning
-  for enemyIndex, enemy in pairs(Enemies) do
+  for _, enemy in pairs(EnemiesTable) do
     -- Draw each enemy
-  	love.graphics.setColor(1, 0, 0)
-    love.graphics.circle('fill', enemy:getX(), enemy:getY(), 30)
+  	lg.setColor(1, 1, 1, 1)
+    lg.draw(enemy:getImage(), enemy:getX() - 32, enemy:getY() - 32)
 
     -- Draw a health bar for each enemy
-    love.graphics.setColor(0, 1, 0)
-    love.graphics.rectangle('fill', enemy:getX() - 25, enemy:getY() + 40, enemy:getHealth() * 0.5, 10)
+    lg.setColor(0, 1, 0)
+    lg.rectangle('fill', enemy:getX() - 25, enemy:getY() + 40, enemy:getHealth() * 0.5, 10)
 
     -- Print a health points for each enemy
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.print('HP: '..enemy:getHealth(), enemy:getX() - 25, enemy:getY() + 40)
-
-    -- Draw damage inside each enemy
-    local weapon = enemy:getWeapon()
-    love.graphics.setColor(0, 0, 0)
-    love.graphics.print('AT: '..weapon:getDamage(), enemy:getX() - 15, enemy:getY() - 5)
+    lg.setColor(1, 1, 1)
+    lg.setFont(Font24)
+    lg.print('HP: '..enemy:getHealth(), enemy:getX() - 25, enemy:getY() + 40)
   end
 
   -- Print a "GAME OVER" if player died
   if Player:getHealth() < 0 then
-  	love.graphics.setColor(0, 0, 0, 1)
+    lg.setFont(Font48)
+  	lg.setColor(0, 0, 0, 1)
     local x, y = 200, 280
     local w, h = 400, 40
-    love.graphics.rectangle('line', x, y, w, h)
-    love.graphics.setColor(1, 0, 0)
+    lg.rectangle('line', x, y, w, h)
+    lg.setColor(1, 0, 0)
     DrawCenteredText(x, y, w, h, 'GAME OVER')
   end
 
   -- Print score
-  love.graphics.setColor(1, 1, 1)
-  love.graphics.print('Score: '..Score)
+  lg.setColor(1, 1, 1)
+  lg.setFont(Font24)
+  lg.print('Score: '..Score)
 
   -- Debug info
   if Debug == true then
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.print(table.concat({
+    lg.setColor(1, 1, 1)
+    lg.setFont(Font24)
+    lg.print(table.concat({
     'FPS: '..love.timer.getFPS(),
   },'\n'), 0, 50)
-  end
-end
-
-function love.update(dt)
-  -- Remove enemy if enemy hp below 0
-  for enemyIndex, enemy in pairs(Enemies) do
-  	if enemy:getHealth() <= 0 then
-    	table.remove(Enemies, enemyIndex)
-      Score = Score + 10
-    end
-  end
-
-  -- Call function for enemies attack
-  EnemiesAttack(Player, Enemies, dt)
-
-  -- Spawn new enemies
-  if GetItemsCount(Enemies) == 0 then
-  	for i = 1, 3, 1 do
-      if i == 1 then
-      	table.insert(Enemies, i, Enemy:new(ArenaWidth / 2 - 150, ArenaHeight * 0.20, 100, 0, WeaponsTable[Random(1, 4)]))
-      elseif i == 2 then
-      	table.insert(Enemies, i, Enemy:new(ArenaWidth / 2, ArenaHeight * 0.20, 100, 0, WeaponsTable[Random(1, 4)]))
-      else
-        table.insert(Enemies, i, Enemy:new(ArenaWidth / 2 + 150, ArenaHeight * 0.20, 100, 0, WeaponsTable[Random(1, 4)] ))
-      end
-    end
   end
 end

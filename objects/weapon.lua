@@ -1,3 +1,5 @@
+local lg = love.graphics
+
 Weapon = {}
 
 function Weapon:new(name, damage, attackSpeed, image)
@@ -27,3 +29,9 @@ function Weapon:new(name, damage, attackSpeed, image)
   setmetatable(obj, self)
   self.__index = self; return obj
 end
+
+WeaponsTable = {
+  Weapon:new('Sword', 5, 1),
+  Weapon:new('Stick', 1, 1/2),
+  Weapon:new('Iron Rod', 3, 1),
+}
